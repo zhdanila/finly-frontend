@@ -1,0 +1,170 @@
+/* Стилі для основного контейнера */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 600px; /* Зменшена максимальна ширина для кращого вигляду */
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Кнопка з покращеними стилями */
+button {
+  margin-top: 20px; /* Збільшено відступ */
+  padding: 14px 25px; /* Більше простору всередині кнопки */
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 8px; /* Округлені кути */
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600; /* Трошки жирніше для виразності */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Додано ефект масштабу при наведенні */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Легка тінь для кнопки */
+}
+
+button:hover {
+  background-color: #535bf2;
+  transform: scale(1.05); /* Збільшення кнопки при наведенні */
+}
+
+button:active {
+  transform: scale(0.98); /* Зменшення кнопки при натисканні */
+}
+
+/* Виправлення для мобільних пристроїв */
+@media (max-width: 600px) {
+  .app-container {
+    padding: 15px; /* Зменшення відступів на мобільних */
+  }
+
+  button {
+    width: 100%; /* Кнопка на всю ширину для мобільних */
+    padding: 12px 0; /* Підлаштовані відступи */
+    font-size: 18px; /* Трошки більший шрифт для мобільних */
+  }
+}
+
+/* Стилі для контейнерів логіну та реєстрації */
+.login-container, .register-container {
+  width: 100%;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Стилі для форм */
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+input[type="email"]:focus,
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: #646cff;
+  outline: none;
+}
+
+/* Повідомлення про помилки */
+.error-message {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Загальні стилі для сторінки */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #f0f0f0;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* Стилі для посилань */
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+/* Темна та світла тема */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+    color: #333;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #eaeaea;
+    background-color: #242424;
+  }
+
+  button {
+    background-color: #424242;
+    color: #fff;
+  }
+
+  button:hover {
+    background-color: #535bf2;
+  }
+
+  .login-container, .register-container {
+    background-color: #333;
+  }
+}
