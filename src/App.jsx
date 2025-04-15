@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register.jsx';
-import UserInfo from './components/auth/UserInfo.jsx';
+import Budget from './components/budget/Budget.jsx';
 
 function App() {
     const [token, setToken] = useState(null);
@@ -41,7 +41,7 @@ function App() {
                     path="/dashboard"
                     element={
                         token ? (
-                            <UserInfo token={token} />
+                            <Budget token={token} />
                         ) : (
                             <Navigate to="/login" />
                         )
