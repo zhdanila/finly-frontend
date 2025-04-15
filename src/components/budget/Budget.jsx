@@ -1,7 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { createBudget, getBudgetById, getBudgetHistory, getCategories, getUserInfo, createTransaction, listTransactions } from '../../api/api.js';
+import {
+    createBudget,
+    createTransaction,
+    getBudgetById,
+    getBudgetHistory,
+    getCategories,
+    getUserInfo,
+    listTransactions
+} from '../../api/api.js';
 import { Line } from 'react-chartjs-2';
-import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import {
+    CategoryScale,
+    Chart as ChartJS,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip
+} from 'chart.js';
 import './Budget.css';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -23,6 +40,7 @@ const Budget = ({ token }) => {
         note: ''
     });
     const [showTransactionForm, setShowTransactionForm] = useState(false);
+    const [showTransactions, setShowTransactions] = useState(false); // New state to control transaction visibility
 
     const fetchCategories = async () => {
         try {
@@ -59,13 +77,13 @@ const Budget = ({ token }) => {
     };
 
     const fetchTransactions = async () => {
-        if (!userId) return;
-
         try {
-            const response = await listTransactions(token, userId);
+            const response = await listTransactions(token); // без userId
+            console.log(response.data);  // Для перевірки структури відповіді
             setTransactions(response.data.transactions || []);
         } catch (err) {
             console.error('Error loading transactions:', err);
+            setError('Failed to load transactions.');
         }
     };
 
@@ -148,14 +166,9 @@ const Budget = ({ token }) => {
         if (token) {
             fetchBudget();
             fetchCategories();
-        }
-    }, [token]);
-
-    useEffect(() => {
-        if (userId) {
             fetchTransactions();
         }
-    }, [userId]);
+    }, [token]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -207,61 +220,6 @@ const Budget = ({ token }) => {
                     <div className="budget-info">
                         <h3>Main Budget</h3>
                         <p>{budget.amount} {budget.currency}</p>
-
-                        <button
-                            className="add-transaction-btn"
-                            onClick={() => setShowTransactionForm(!showTransactionForm)}
-                        >
-                            {showTransactionForm ? 'Cancel' : 'Add Transaction'}
-                        </button>
-
-                        {showTransactionForm && (
-                            <div className="transaction-form-container">
-                                <h4>New Transaction</h4>
-                                <form onSubmit={handleCreateTransaction} className="transaction-form">
-                                    <select
-                                        value={newTransaction.type}
-                                        onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value })}
-                                        required
-                                    >
-                                        <option value="withdrawal">Expense (Withdrawal)</option>
-                                        <option value="deposit">Income (Deposit)</option>
-                                    </select>
-
-                                    <input
-                                        type="number"
-                                        placeholder="Amount"
-                                        value={newTransaction.amount}
-                                        onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
-                                        required
-                                        min="0.01"
-                                        step="0.01"
-                                    />
-
-                                    <input
-                                        type="text"
-                                        placeholder="Note"
-                                        value={newTransaction.note}
-                                        onChange={(e) => setNewTransaction({ ...newTransaction, note: e.target.value })}
-                                    />
-
-                                    <select
-                                        value={newTransaction.category_id}
-                                        onChange={(e) => setNewTransaction({ ...newTransaction, category_id: e.target.value })}
-                                        required
-                                    >
-                                        <option value="" disabled>Select Category</option>
-                                        {categories.map((cat) => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                        ))}
-                                    </select>
-
-                                    <input type="hidden" value={budget.id} />
-
-                                    <button type="submit">Save Transaction</button>
-                                </form>
-                            </div>
-                        )}
                     </div>
 
                     <div className="budget-history-chart">
@@ -272,95 +230,129 @@ const Budget = ({ token }) => {
                             <p>History is empty.</p>
                         )}
                     </div>
-                </div>
-            ) : (
-                <div className="modal-backdrop always-visible">
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>Create a Budget</h3>
-                        <form onSubmit={handleCreate} className="budget-form">
-                            <select
-                                value={newBudget.currency}
-                                onChange={(e) => setNewBudget({ ...newBudget, currency: e.target.value })}
-                                required
-                            >
-                                <option value="" disabled>Select Currency</option>
-                                <option value="USD">USD — US Dollar</option>
-                                <option value="EUR">EUR — Euro</option>
-                                <option value="UAH">UAH — Ukrainian Hryvnia</option>
-                                {/* More currencies */}
-                            </select>
 
-                            <input
-                                type="number"
-                                placeholder="Initial Amount"
-                                value={newBudget.amount}
-                                onChange={(e) => setNewBudget({ ...newBudget, amount: parseFloat(e.target.value) || 0 })}
-                                required
-                                min="0"
-                                step="100"
-                            />
+                    <div className="transaction-actions">
+                        <button
+                            className={`add-transaction-btn ${showTransactionForm ? 'cancel' : ''}`}
+                            onClick={() => setShowTransactionForm(!showTransactionForm)}
+                        >
+                            <span className="icon">
+                                {showTransactionForm ? '❌' : '➕'}
+                            </span>
+                            {showTransactionForm ? 'Cancel' : 'Add Transaction'}
+                        </button>
+                    </div>
 
-                            <select
-                                value={newBudget.categoryId}
-                                onChange={(e) => setNewBudget({ ...newBudget, categoryId: e.target.value })}
-                                required
-                            >
-                                <option value="" disabled>Select Category</option>
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    {showTransactionForm && (
+                        <div className="transaction-form-container">
+                            <h4>New Transaction</h4>
+                            <form onSubmit={handleCreateTransaction} className="transaction-form">
+                                <div className="form-group">
+                                    <label htmlFor="transaction-type">Transaction Type</label>
+                                    <select
+                                        id="transaction-type"
+                                        value={newTransaction.type}
+                                        onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value })}
+                                        required
+                                    >
+                                        <option value="withdrawal">Expense (Withdrawal)</option>
+                                        <option value="deposit">Income (Deposit)</option>
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="transaction-amount">Amount</label>
+                                    <input
+                                        id="transaction-amount"
+                                        type="number"
+                                        placeholder="Enter amount"
+                                        value={newTransaction.amount}
+                                        onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
+                                        required
+                                        min="0.01"
+                                        step="0.01"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="transaction-category">Category</label>
+                                    <select
+                                        id="transaction-category"
+                                        value={newTransaction.category_id}
+                                        onChange={(e) =>
+                                            setNewTransaction({ ...newTransaction, category_id: e.target.value })
+                                        }
+                                        required
+                                    >
+                                        <option value="" disabled>
+                                            Select a category
+                                        </option>
+                                        {categories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="transaction-note">Note (Optional)</label>
+                                    <input
+                                        id="transaction-note"
+                                        type="text"
+                                        placeholder="Add a note"
+                                        value={newTransaction.note}
+                                        onChange={(e) => setNewTransaction({ ...newTransaction, note: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="form-actions">
+                                    <button type="submit" className="submit-btn">
+                                        Save Transaction
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="cancel-btn"
+                                        onClick={() => setShowTransactionForm(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="transaction-list">
+                        <h3>Recent Transactions</h3>
+                        <button onClick={() => setShowTransactions(!showTransactions)}>
+                            {showTransactions ? 'Hide Transactions' : 'Show Transactions'}
+                        </button>
+                        {showTransactions && (
+                            <ul>
+                                {transactions.map((transaction) => (
+                                    <li key={transaction.id} className="transaction-item">
+                                        <div className="transaction-type">
+                                            <strong>{transaction.type === 'withdrawal' ? 'Expense' : 'Income'}</strong>
+                                        </div>
+                                        <div className="transaction-details">
+                                            <span>{transaction.amount} {budget?.currency}</span>
+                                            <span className="category-name">
+                                                {categories.find(cat => cat.id === transaction.category_id)?.name}
+                                            </span>
+                                            {transaction.note && <span className="note">{transaction.note}</span>}
+                                        </div>
+                                        <div className="transaction-date">
+                                            {new Date(transaction.created_at).toLocaleDateString()}
+                                        </div>
+                                    </li>
                                 ))}
-                            </select>
-
-                            <button type="submit">Add</button>
-                        </form>
+                            </ul>
+                        )}
                     </div>
                 </div>
+            ) : (
+                <p>No budget available.</p>
             )}
-
-            {budget && (
-                <div className="transactions-section">
-                    <h3>Recent Transactions</h3>
-
-                    {transactions.length > 0 ? (
-                        <div className="transactions-list">
-                            {transactions.slice(0, 5).map((transaction) => {
-                                const category = categories.find(c => c.id === transaction.category_id);
-                                return (
-                                    <div key={transaction.id} className={`transaction-item ${transaction.type}`}>
-                                        <div className="transaction-details">
-                                            <h4>{transaction.note || 'No description'}</h4>
-                                            <p className="transaction-category">{category ? category.name : 'Unknown category'}</p>
-                                            <p className="transaction-date">{new Date(transaction.created_at).toLocaleDateString()}</p>
-                                        </div>
-                                        <div className={`transaction-amount ${transaction.type}`}>
-                                            {transaction.type === 'deposit' ? '+' : '-'}
-                                            {transaction.amount} {budget.currency}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                            {transactions.length > 5 && (
-                                <button className="view-all-btn">View All Transactions</button>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="no-data">No transactions yet. Add your first transaction above.</p>
-                    )}
-                </div>
-            )}
-
-            <div className="category-list">
-                <h3>Categories</h3>
-                <div className="budget-grid">
-                    {categories.map((cat) => (
-                        <div className="budget-card" key={cat.id}>
-                            <h4>{cat.name}</h4>
-                            <p>{cat.description}</p>
-                            {cat.is_user_category && <span className="badge">Your Category</span>}
-                        </div>
-                    ))}
-                </div>
-            </div>
         </div>
     );
 };

@@ -64,13 +64,15 @@ export const createTransaction = (token, transactionData) =>
         },
     });
 
-export const listTransactions = (token, userId) =>
-    axios.get(`${API_URL}/transaction`, {
+export const listTransactions = (token) => {
+    return axios.get(`${API_URL}/transaction`, {
         headers: {
             Authorization: `Bearer ${token}`,
-            'User-Id': userId,
         },
     });
+};
+
+
 
 export const updateTransaction = (token, transactionId, transactionData) =>
     axios.patch(`${API_URL}/transaction/${transactionId}`, transactionData, {
