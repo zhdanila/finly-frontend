@@ -53,11 +53,17 @@ export const getBalance = (token, budgetId) =>
     });
 
 // === Category Endpoints ===
-export const getCategories = (token, userId) =>
+export const getCategories = (token) =>
     axios.get(`${API_URL}/category`, {
         headers: {
             'Authorization': `Bearer ${token}`,
-            'User-Id': userId,
+        },
+    });
+
+export const createCategory = (token, categoryData) =>
+    axios.post(`${API_URL}/category`, categoryData, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
         },
     });
 

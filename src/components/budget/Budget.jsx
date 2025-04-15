@@ -9,6 +9,8 @@ import {
     getUserInfo,
     listTransactions,
     updateTransaction,
+    deleteTransaction,
+    createCategory,
 } from '../../api/api.js';
 import { Line } from 'react-chartjs-2';
 import {
@@ -28,7 +30,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const Budget = ({ token }) => {
     const [balance, setBalance] = useState(null);
     const [budget, setBudget] = useState(null);
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState([]);
     const [newBudget, setNewBudget] = useState({ currency: '', amount: '' });
     const [budgetHistory, setBudgetHistory] = useState([]);
     const [chartData, setChartData] = useState({});
@@ -44,8 +46,30 @@ const Budget = ({ token }) => {
     });
     const [editTransaction, setEditTransaction] = useState(null);
     const [showTransactionForm, setShowTransactionForm] = useState(false);
+    const [showCategoryForm, setShowCategoryForm] = useState(false);
+    const [newCategory, setNewCategory] = useState({ name: '' }); // Removed description
     const [showTransactions, setShowTransactions] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Function to add error with timer
+    const addError = (message, id) => {
+        setErrors((prev) => [...prev, { id, message }]);
+        setTimeout(() => {
+            setErrors((prev) => prev.filter((err) => err.id !== id));
+        }, 5000);
+    };
+
+    // Function to handle backend errors
+    const handleError = (err, defaultMessage) => {
+        const errorId = Date.now();
+        if (err.response && err.response.data && err.response.data.message) {
+            addError(err.response.data.message, errorId);
+        } else if (err.message) {
+            addError(err.message, errorId);
+        } else {
+            addError(defaultMessage, errorId);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -56,10 +80,10 @@ const Budget = ({ token }) => {
                 lastName: userData.last_name,
                 email: userData.email,
             });
-            const response = await getCategories(token, userData.id);
+            const response = await getCategories(token);
             setCategories(response.data.categories || []);
         } catch (err) {
-            setError('Failed to load categories.');
+            handleError(err, 'Failed to load categories.');
         }
     };
 
@@ -70,7 +94,7 @@ const Budget = ({ token }) => {
             const latestBalance = historyData.length > 0 ? historyData[historyData.length - 1].balance : 0;
             setBalance(latestBalance);
         } catch (err) {
-            setError('Failed to load balance.');
+            handleError(err, 'Failed to load balance.');
         }
     };
 
@@ -96,7 +120,7 @@ const Budget = ({ token }) => {
                 setBudgetHistory([]);
             }
         } catch (err) {
-            setError('Failed to load budget.');
+            handleError(err, 'Failed to load budget.');
             setBudget(null);
             setBalance(null);
         } finally {
@@ -109,7 +133,7 @@ const Budget = ({ token }) => {
             const response = await listTransactions(token);
             setTransactions(response.data.transactions || []);
         } catch (err) {
-            setError('Failed to load transactions.');
+            handleError(err, 'Failed to load transactions.');
         }
     };
 
@@ -136,23 +160,23 @@ const Budget = ({ token }) => {
                         backgroundColor: (context) => {
                             const ctx = context.chart.ctx;
                             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                            gradient.addColorStop(0, 'rgba(52, 202, 165, 0.3)');
-                            gradient.addColorStop(1, 'rgba(52, 202, 165, 0)');
+                            gradient.addColorStop(0, 'rgba(92, 158, 173, 0.3)');
+                            gradient.addColorStop(1, 'rgba(92, 158, 173, 0)');
                             return gradient;
                         },
-                        borderColor: '#34CAA5',
+                        borderColor: '#5C9EAD',
                         borderWidth: 3,
                         tension: 0.5,
                         pointRadius: 0,
                         pointHoverRadius: 8,
                         pointBackgroundColor: '#fff',
-                        pointBorderColor: '#34CAA5',
+                        pointBorderColor: '#5C9EAD',
                         pointBorderWidth: 2,
                     },
                 ],
             });
         } catch (err) {
-            setError('Failed to load budget history.');
+            handleError(err, 'Failed to load budget history.');
         }
     };
 
@@ -209,10 +233,10 @@ const Budget = ({ token }) => {
         if (token) {
             setIsLoading(true);
             Promise.all([fetchBudget(), fetchCategories()])
-                .catch(() => setError('Failed to load initial data.'))
+                .catch((err) => handleError(err, 'Failed to load initial data.'))
                 .finally(() => setIsLoading(false));
         } else {
-            setError('Please log in to view your budget.');
+            addError('Please log in to view your budget.', Date.now());
         }
     }, [token]);
 
@@ -227,7 +251,7 @@ const Budget = ({ token }) => {
             setNewBudget({ currency: '', amount: '' });
             await fetchBudget();
         } catch (err) {
-            setError('Failed to create budget.');
+            handleError(err, 'Failed to create budget.');
         } finally {
             setIsLoading(false);
         }
@@ -253,7 +277,7 @@ const Budget = ({ token }) => {
             fetchBudget();
             setShowTransactionForm(false);
         } catch (err) {
-            setError('Failed to create transaction.');
+            handleError(err, 'Failed to create transaction.');
         } finally {
             setIsLoading(false);
         }
@@ -288,10 +312,45 @@ const Budget = ({ token }) => {
             fetchTransactions();
             fetchBudget();
         } catch (err) {
-            setError('Failed to update transaction.');
+            handleError(err, 'Failed to update transaction.');
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleDeleteTransaction = async (transactionId) => {
+        if (window.confirm('Are you sure you want to delete this transaction?')) {
+            try {
+                setIsLoading(true);
+                await deleteTransaction(token, transactionId);
+                fetchTransactions();
+                fetchBudget();
+            } catch (err) {
+                handleError(err, 'Failed to delete transaction.');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
+
+    const handleCreateCategory = async (e) => {
+        e.preventDefault();
+        try {
+            setIsLoading(true);
+            await createCategory(token, { name: newCategory.name }); // Send only name
+            setNewCategory({ name: '' });
+            fetchCategories();
+            setShowCategoryForm(false);
+        } catch (err) {
+            handleError(err, 'Failed to create category.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCancelCategory = () => {
+        setNewCategory({ name: '' });
+        setShowCategoryForm(false);
     };
 
     const handleCancelEdit = () => {
@@ -299,23 +358,41 @@ const Budget = ({ token }) => {
         setShowTransactionForm(false);
     };
 
+    const closeError = (id) => {
+        setErrors((prev) => prev.filter((err) => err.id !== id));
+    };
+
     return (
         <div className="budget-container">
             {isLoading && <div className="loader">Loading...</div>}
-            {error && <div className="error-message">{error}</div>}
+            {errors.length > 0 && (
+                <div className="error-container">
+                    {errors.map((error) => (
+                        <div key={error.id} className="error-message">
+                            <span>{error.message}</span>
+                            <button
+                                className="error-close-btn"
+                                onClick={() => closeError(error.id)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* Header Section */}
             <header className="budget-header">
                 {userInfo ? (
                     <div className="user-info">
                         <h1>
-                            Hello, {userInfo.firstName} {userInfo.lastName}
+                            Welcome, {userInfo.firstName} {userInfo.lastName}
                         </h1>
                         <p>{userInfo.email}</p>
                     </div>
                 ) : (
                     <div className="user-info">
-                        <h1>Loading user info...</h1>
+                        <h1>Loading user data...</h1>
                     </div>
                 )}
             </header>
@@ -344,19 +421,31 @@ const Budget = ({ token }) => {
 
                     {/* Transaction Form */}
                     <div className="transaction-section">
-                        <button
-                            className={`action-btn ${showTransactionForm ? 'cancel' : ''}`}
-                            onClick={() => {
-                                setEditTransaction(null);
-                                setShowTransactionForm(!showTransactionForm);
-                            }}
-                        >
-                            {showTransactionForm ? (
-                                <span>Cancel</span>
-                            ) : (
-                                <span>Add Transaction</span>
-                            )}
-                        </button>
+                        <div className="action-buttons">
+                            <button
+                                className={`action-btn ${showTransactionForm ? 'cancel' : ''}`}
+                                onClick={() => {
+                                    setEditTransaction(null);
+                                    setShowTransactionForm(!showTransactionForm);
+                                }}
+                            >
+                                {showTransactionForm ? (
+                                    <span>Cancel</span>
+                                ) : (
+                                    <span>Add Transaction</span>
+                                )}
+                            </button>
+                            <button
+                                className={`action-btn ${showCategoryForm ? 'cancel' : ''}`}
+                                onClick={() => setShowCategoryForm(!showCategoryForm)}
+                            >
+                                {showCategoryForm ? (
+                                    <span>Cancel</span>
+                                ) : (
+                                    <span>Add Category</span>
+                                )}
+                            </button>
+                        </div>
 
                         {showTransactionForm && (
                             <div className="transaction-form-card">
@@ -423,7 +512,7 @@ const Budget = ({ token }) => {
                                             required
                                         >
                                             <option value="" disabled>
-                                                Select category
+                                                Select a category
                                             </option>
                                             {categories.map((cat) => (
                                                 <option key={cat.id} value={cat.id}>
@@ -434,7 +523,7 @@ const Budget = ({ token }) => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label htmlFor="transaction-note">Note (Optional)</label>
+                                        <label htmlFor="transaction-note">Note (optional)</label>
                                         <input
                                             id="transaction-note"
                                             type="text"
@@ -453,6 +542,35 @@ const Budget = ({ token }) => {
                                             {editTransaction ? 'Update' : 'Save'}
                                         </button>
                                         <button type="button" className="cancel-btn" onClick={handleCancelEdit}>
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
+
+                        {showCategoryForm && (
+                            <div className="category-form-card">
+                                <h3>New Category</h3>
+                                <form onSubmit={handleCreateCategory} className="category-form">
+                                    <div className="form-group">
+                                        <label htmlFor="category-name">Name</label>
+                                        <input
+                                            id="category-name"
+                                            type="text"
+                                            placeholder="Enter name..."
+                                            value={newCategory.name}
+                                            onChange={(e) =>
+                                                setNewCategory({ ...newCategory, name: e.target.value })
+                                            }
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" className="submit-btn">
+                                            Save
+                                        </button>
+                                        <button type="button" className="cancel-btn" onClick={handleCancelCategory}>
                                             Cancel
                                         </button>
                                     </div>
@@ -498,11 +616,17 @@ const Budget = ({ token }) => {
                                                 >
                                                     Edit
                                                 </button>
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={() => handleDeleteTransaction(transaction.id)}
+                                                >
+                                                    Delete
+                                                </button>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="empty-message">No transactions yet.</p>
+                                    <p className="empty-message">No transactions available.</p>
                                 )}
                             </div>
                         )}
@@ -511,7 +635,7 @@ const Budget = ({ token }) => {
             ) : (
                 !isLoading && (
                     <div className="create-budget-card">
-                        <h2>Create Your Budget</h2>
+                        <h2>Create Budget</h2>
                         <form onSubmit={handleCreate} className="budget-form">
                             <div className="form-group">
                                 <label htmlFor="currency">Currency</label>
@@ -522,7 +646,7 @@ const Budget = ({ token }) => {
                                     required
                                 >
                                     <option value="" disabled>
-                                        Select Currency
+                                        Select currency
                                     </option>
                                     <option value="USD">USD — US Dollar</option>
                                     <option value="EUR">EUR — Euro</option>

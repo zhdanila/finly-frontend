@@ -1,23 +1,23 @@
 /* CSS Variables */
 :root {
-    --primary: #5C9EAD; /* М'який синьо-зелений для кнопок і акцентів */
-    --primary-dark: #457B9D; /* Темніший відтінок для ховерів */
-    --danger: #E63946; /* Приглушений червоний для помилок і скасування */
-    --danger-dark: #C81E2E; /* Темніший червоний для ховерів */
-    --success: #52B788; /* М'який зелений для позитивних дій */
-    --success-dark: #40916C; /* Темніший зелений */
-    --neutral: #64748B; /* Нейтральний сіро-синій для другорядних елементів */
-    --neutral-dark: #475569; /* Темніший нейтральний */
-    --text-dark: #1E293B; /* Темно-сірий для основного тексту */
-    --text-muted: #6B7280; /* Сірий для другорядного тексту */
-    --text-light: #A1A8B5; /* Світло-сірий для плейсхолдерів */
-    --bg-light: #F8FAFC; /* Світло-сірий фон для контейнера */
-    --bg-lighter: #FFFFFF; /* Чистий білий для карток */
+    --primary: #5C9EAD; /* Soft teal for buttons and accents */
+    --primary-dark: #457B9D; /* Darker shade for hovers */
+    --danger: #E63946; /* Muted red for errors and cancellations */
+    --danger-dark: #C81E2E; /* Darker red for hovers */
+    --success: #52B788; /* Soft green for positive actions */
+    --success-dark: #40916C; /* Darker green */
+    --neutral: #64748B; /* Neutral gray-blue for secondary elements */
+    --neutral-dark: #475569; /* Darker neutral */
+    --text-dark: #1E293B; /* Dark gray for primary text */
+    --text-muted: #6B7280; /* Gray for secondary text */
+    --text-light: #A1A8B5; /* Light gray for placeholders */
+    --bg-light: #F8FAFC; /* Light gray background for container */
+    --bg-lighter: #FFFFFF; /* Pure white for cards */
     --white: #FFFFFF;
-    --shadow: rgba(0, 0, 0, 0.05); /* Дуже м'яка тінь */
-    --shadow-dark: rgba(0, 0, 0, 0.1); /* Трішки темніша тінь */
-    --border: #E2E8F0; /* Світло-сірий для меж */
-    --border-light: #EDF2F7; /* Ще світліший для тонких ліній */
+    --shadow: rgba(0, 0, 0, 0.05); /* Very soft shadow */
+    --shadow-dark: rgba(0, 0, 0, 0.1); /* Slightly darker shadow */
+    --border: #E2E8F0; /* Light gray for borders */
+    --border-light: #EDF2F7; /* Even lighter for subtle lines */
     --radius: 12px;
     --radius-large: 16px;
     --spacing: 16px;
@@ -54,14 +54,56 @@
     padding: var(--spacing-large);
 }
 
-/* Error Message */
+/* Error Messages */
+.error-container {
+    position: fixed;
+    top: var(--spacing);
+    right: var(--spacing);
+    width: 320px;
+    z-index: 1000;
+}
+
 .error-message {
-    background: rgba(230, 57, 70, 0.1); /* М'якший фон для помилок */
+    background: rgba(230, 57, 70, 0.1);
     color: var(--danger);
     padding: var(--spacing);
     border-radius: var(--radius);
-    text-align: center;
     margin-bottom: var(--spacing);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px var(--shadow);
+    animation: slideIn 0.3s ease-out;
+}
+
+.error-message span {
+    font-size: var(--font-base);
+    flex-grow: 1;
+}
+
+.error-close-btn {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: var(--font-medium);
+    cursor: pointer;
+    padding: 0 8px;
+    transition: color 0.2s ease;
+}
+
+.error-close-btn:hover {
+    color: var(--danger-dark);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* Header */
@@ -101,7 +143,7 @@
 
 /* Balance Card */
 .balance-card {
-    background: var(--bg-lighter); /* Білий фон замість градієнта */
+    background: var(--bg-lighter);
     color: var(--text-dark);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -120,7 +162,7 @@
 .balance-amount {
     font-size: var(--font-xxlarge);
     font-weight: 700;
-    color: var(--primary); /* Акцент на суму */
+    color: var(--primary);
 }
 
 /* Chart Section */
@@ -154,6 +196,12 @@
     grid-column: 1 / -1;
 }
 
+.action-buttons {
+    display: flex;
+    gap: var(--spacing);
+    margin-bottom: var(--spacing);
+}
+
 .action-btn {
     background: var(--primary);
     color: var(--white);
@@ -164,7 +212,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    width: 100%;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -212,6 +260,28 @@
     }
 }
 
+/* Category Form */
+.category-form-card {
+    background: var(--bg-lighter);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    margin-top: var(--spacing);
+    box-shadow: 0 2px 10px var(--shadow);
+}
+
+.category-form-card h3 {
+    font-size: var(--font-xlarge);
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: var(--spacing-large);
+}
+
+.category-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing);
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -237,7 +307,7 @@
 .form-group input:focus,
 .form-group select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 8px rgba(92, 158, 173, 0.2); /* М'якший ефект фокусу */
+    box-shadow: 0 0 8px rgba(92, 158, 173, 0.2);
     outline: none;
 }
 
@@ -248,7 +318,6 @@
 }
 
 .form-actions {
-    grid-column: 1 / -1;
     display: flex;
     gap: var(--spacing);
     justify-content: flex-end;
@@ -348,13 +417,18 @@
 
 .transaction-amount {
     font-weight: 500;
-    color: var(--primary); /* Акцент на суму */
+    color: var(--primary);
 }
 
 .transaction-category,
 .transaction-note,
 .transaction-date {
     color: var(--text-muted);
+}
+
+.transaction-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .transaction-actions .edit-btn {
@@ -373,6 +447,22 @@
     transform: translateY(-2px);
 }
 
+.transaction-actions .delete-btn {
+    background: var(--danger);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-size: var(--font-small);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.transaction-actions .delete-btn:hover {
+    background: var(--danger-dark);
+    transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
     .transaction-table {
         grid-template-columns: 1fr;
@@ -388,6 +478,11 @@
         flex-direction: column;
         padding: var(--spacing);
         border-bottom: 1px solid var(--border-light);
+    }
+
+    .transaction-actions {
+        flex-direction: column;
+        gap: var(--spacing);
     }
 }
 
