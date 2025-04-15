@@ -45,12 +45,43 @@ export const getBudgetHistory = (token, budgetId) =>
         },
     });
 
-// === Category Endpoints ===
 
+// === Category Endpoints ===
 export const getCategories = (token, userId) =>
     axios.get(`${API_URL}/category`, {
         headers: {
             'Authorization': `Bearer ${token}`,
             'User-Id': userId,
+        },
+    });
+
+
+// === Transaction Endpoints ===
+export const createTransaction = (token, transactionData) =>
+    axios.post(`${API_URL}/transaction`, transactionData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+export const listTransactions = (token, userId) =>
+    axios.get(`${API_URL}/transaction`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'User-Id': userId,
+        },
+    });
+
+export const updateTransaction = (token, transactionId, transactionData) =>
+    axios.patch(`${API_URL}/transaction/${transactionId}`, transactionData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+export const deleteTransaction = (token, transactionId) =>
+    axios.delete(`${API_URL}/transaction/${transactionId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
         },
     });
