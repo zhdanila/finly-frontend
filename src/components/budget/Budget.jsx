@@ -8,6 +8,7 @@ import {
     getCategories,
     getUserInfo,
     listTransactions,
+    updateTransaction,
 } from '../../api/api.js';
 import { Line } from 'react-chartjs-2';
 import {
@@ -33,6 +34,7 @@ const Budget = ({ token }) => {
     const [chartData, setChartData] = useState({});
     const [categories, setCategories] = useState([]);
     const [userId, setUserId] = useState(null);
+    const [userInfo, setUserInfo] = useState(null); // New state for user info
     const [transactions, setTransactions] = useState([]);
     const [newTransaction, setNewTransaction] = useState({
         amount: '',
@@ -41,16 +43,22 @@ const Budget = ({ token }) => {
         type: 'withdrawal',
         note: '',
     });
+    const [editTransaction, setEditTransaction] = useState(null);
     const [showTransactionForm, setShowTransactionForm] = useState(false);
     const [showTransactions, setShowTransactions] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchCategories = async () => {
         try {
-            const userInfo = await getUserInfo(token);
-            const userId = userInfo.data.id;
-            setUserId(userId);
-            const response = await getCategories(token, userId);
+            const userInfoResponse = await getUserInfo(token);
+            const userData = userInfoResponse.data;
+            setUserInfo({
+                firstName: userData.first_name,
+                lastName: userData.last_name,
+                email: userData.email,
+            });
+            setUserId(userData.id);
+            const response = await getCategories(token, userData.id);
             setCategories(response.data.categories || []);
             console.log('Categories fetched:', response.data);
         } catch (err) {
@@ -83,7 +91,6 @@ const Budget = ({ token }) => {
 
             if (data && Object.keys(data).length > 0) {
                 setBudget(data);
-                // Only fetch related data if budget exists
                 fetchBudgetHistory(data.id);
                 fetchBudgetBalance(data.id);
                 fetchTransactions();
@@ -95,8 +102,8 @@ const Budget = ({ token }) => {
                 console.warn('No budget data found');
                 setBudget(null);
                 setBalance(null);
-                setTransactions([]); // Clear transactions for new users
-                setBudgetHistory([]); // Clear history for new users
+                setTransactions([]);
+                setBudgetHistory([]);
             }
         } catch (err) {
             console.error('Error loading budget:', err);
@@ -199,7 +206,6 @@ const Budget = ({ token }) => {
         if (token) {
             console.log('Token received:', token);
             setIsLoading(true);
-            // Only fetch budget and categories initially
             Promise.all([fetchBudget(), fetchCategories()])
                 .catch((err) => {
                     console.error('Error in initial fetch:', err);
@@ -221,7 +227,6 @@ const Budget = ({ token }) => {
                 amount: parseFloat(newBudget.amount) || 0,
             });
             setNewBudget({ currency: '', amount: '', categoryId: '' });
-            // Fetch budget after creation to load new budget data
             await fetchBudget();
         } catch (err) {
             console.error('Error creating budget:', err);
@@ -248,7 +253,7 @@ const Budget = ({ token }) => {
                 note: '',
             });
             fetchTransactions();
-            fetchBudget(); // Refreshes budget, balance, and history
+            fetchBudget();
             setShowTransactionForm(false);
         } catch (err) {
             console.error('Error creating transaction:', err);
@@ -258,9 +263,62 @@ const Budget = ({ token }) => {
         }
     };
 
+    const handleEditTransaction = (transaction) => {
+        setEditTransaction({
+            id: transaction.id,
+            amount: transaction.amount.toString(),
+            category_id: transaction.category_id || '',
+            budget_id: transaction.budget_id || budget?.id || '',
+            type: transaction.type || 'withdrawal',
+            note: transaction.note || '',
+        });
+        setShowTransactionForm(true);
+    };
+
+    const handleUpdateTransaction = async (e) => {
+        e.preventDefault();
+        try {
+            setIsLoading(true);
+            const transactionData = {
+                amount: parseFloat(editTransaction.amount),
+                category_id: editTransaction.category_id || undefined,
+                budget_id: editTransaction.budget_id ? parseInt(editTransaction.budget_id) : undefined,
+                type: editTransaction.type || undefined,
+                note: editTransaction.note || undefined,
+            };
+            await updateTransaction(token, editTransaction.id, transactionData);
+            setEditTransaction(null);
+            setShowTransactionForm(false);
+            fetchTransactions();
+            fetchBudget();
+        } catch (err) {
+            console.error('Error updating transaction:', err);
+            setError('Failed to update transaction.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditTransaction(null);
+        setShowTransactionForm(false);
+    };
+
     return (
         <div className="budget-container">
-            <h2>My Budget</h2>
+            {/* User Info Section */}
+            <div className="user-info">
+                {isLoading ? (
+                    <p>Loading user info...</p>
+                ) : userInfo ? (
+                    <>
+                        <h3>Welcome, {userInfo.firstName} {userInfo.lastName}</h3>
+                        <p>Email: {userInfo.email}</p>
+                    </>
+                ) : (
+                    <p>Unable to load user info.</p>
+                )}
+            </div>
 
             {isLoading && <p>Loading...</p>}
             {error && <p className="error-message">{error}</p>}
@@ -268,8 +326,7 @@ const Budget = ({ token }) => {
             {!isLoading && budget ? (
                 <div className="budget-card">
                     <div className="budget-info">
-                        <h3>Main Budget</h3>
-                        <p>{balance !== null ? `${balance} ${budget.currency}` : 'Loading balance...'}</p>
+                        <p>Balance: {balance !== null ? `${balance} ${budget.currency}` : 'Loading balance...'}</p>
                     </div>
 
                     <div className="budget-history-chart">
@@ -284,7 +341,10 @@ const Budget = ({ token }) => {
                     <div className="transaction-actions">
                         <button
                             className={`add-transaction-btn ${showTransactionForm ? 'cancel' : ''}`}
-                            onClick={() => setShowTransactionForm(!showTransactionForm)}
+                            onClick={() => {
+                                setEditTransaction(null);
+                                setShowTransactionForm(!showTransactionForm);
+                            }}
                         >
                             <span className="icon">{showTransactionForm ? '❌' : '➕'}</span>
                             {showTransactionForm ? 'Cancel' : 'Add Transaction'}
@@ -293,15 +353,20 @@ const Budget = ({ token }) => {
 
                     {showTransactionForm && (
                         <div className="transaction-form-container">
-                            <h4>New Transaction</h4>
-                            <form onSubmit={handleCreateTransaction} className="transaction-form">
+                            <h4>{editTransaction ? 'Edit Transaction' : 'New Transaction'}</h4>
+                            <form
+                                onSubmit={editTransaction ? handleUpdateTransaction : handleCreateTransaction}
+                                className="transaction-form"
+                            >
                                 <div className="form-group">
                                     <label htmlFor="transaction-type">Transaction Type</label>
                                     <select
                                         id="transaction-type"
-                                        value={newTransaction.type}
+                                        value={editTransaction ? editTransaction.type : newTransaction.type}
                                         onChange={(e) =>
-                                            setNewTransaction({ ...newTransaction, type: e.target.value })
+                                            editTransaction
+                                                ? setEditTransaction({ ...editTransaction, type: e.target.value })
+                                                : setNewTransaction({ ...newTransaction, type: e.target.value })
                                         }
                                         required
                                     >
@@ -316,9 +381,11 @@ const Budget = ({ token }) => {
                                         id="transaction-amount"
                                         type="number"
                                         placeholder="Enter amount"
-                                        value={newTransaction.amount}
+                                        value={editTransaction ? editTransaction.amount : newTransaction.amount}
                                         onChange={(e) =>
-                                            setNewTransaction({ ...newTransaction, amount: e.target.value })
+                                            editTransaction
+                                                ? setEditTransaction({ ...editTransaction, amount: e.target.value })
+                                                : setNewTransaction({ ...newTransaction, amount: e.target.value })
                                         }
                                         required
                                         min="0.01"
@@ -330,9 +397,19 @@ const Budget = ({ token }) => {
                                     <label htmlFor="transaction-category">Category</label>
                                     <select
                                         id="transaction-category"
-                                        value={newTransaction.category_id}
+                                        value={
+                                            editTransaction ? editTransaction.category_id : newTransaction.category_id
+                                        }
                                         onChange={(e) =>
-                                            setNewTransaction({ ...newTransaction, category_id: e.target.value })
+                                            editTransaction
+                                                ? setEditTransaction({
+                                                    ...editTransaction,
+                                                    category_id: e.target.value,
+                                                })
+                                                : setNewTransaction({
+                                                    ...newTransaction,
+                                                    category_id: e.target.value,
+                                                })
                                         }
                                         required
                                     >
@@ -353,22 +430,20 @@ const Budget = ({ token }) => {
                                         id="transaction-note"
                                         type="text"
                                         placeholder="Add a note"
-                                        value={newTransaction.note}
+                                        value={editTransaction ? editTransaction.note : newTransaction.note}
                                         onChange={(e) =>
-                                            setNewTransaction({ ...newTransaction, note: e.target.value })
+                                            editTransaction
+                                                ? setEditTransaction({ ...editTransaction, note: e.target.value })
+                                                : setNewTransaction({ ...newTransaction, note: e.target.value })
                                         }
                                     />
                                 </div>
 
                                 <div className="form-actions">
                                     <button type="submit" className="submit-btn">
-                                        Save Transaction
+                                        {editTransaction ? 'Update Transaction' : 'Save Transaction'}
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="cancel-btn"
-                                        onClick={() => setShowTransactionForm(false)}
-                                    >
+                                    <button type="button" className="cancel-btn" onClick={handleCancelEdit}>
                                         Cancel
                                     </button>
                                 </div>
@@ -402,6 +477,14 @@ const Budget = ({ token }) => {
                                         </div>
                                         <div className="transaction-date">
                                             {new Date(transaction.created_at).toLocaleDateString()}
+                                        </div>
+                                        <div className="transaction-actions">
+                                            <button
+                                                className="edit-btn"
+                                                onClick={() => handleEditTransaction(transaction)}
+                                            >
+                                                Edit
+                                            </button>
                                         </div>
                                     </li>
                                 ))}

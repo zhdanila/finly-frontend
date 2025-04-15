@@ -57,6 +57,28 @@
     margin-bottom: var(--spacing-large);
 }
 
+/* User Info Section */
+.user-info {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: var(--spacing);
+    margin-bottom: var(--spacing-large);
+    box-shadow: 0 1px 6px var(--shadow);
+    text-align: center;
+}
+
+.user-info h3 {
+    font-size: var(--font-large);
+    color: var(--text-dark);
+    margin: 0 0 8px;
+}
+
+.user-info p {
+    font-size: var(--font-base);
+    color: var(--text-muted);
+    margin: 0;
+}
+
 /* Buttons */
 button,
 .add-budget-btn,
@@ -333,4 +355,40 @@ button,
 .transaction-date {
     margin-top: 6px;
     text-align: right;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.transaction-actions {
+    margin-left: 10px;
+}
+
+.edit-btn {
+    background-color: #4bc0c0;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.edit-btn:hover {
+    background-color: #3aa0a0;
+}
+
+.transaction-details {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.transaction-type,
+.transaction-date {
+    min-width: 100px;
 }
