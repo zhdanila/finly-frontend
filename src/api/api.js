@@ -45,6 +45,12 @@ export const getBudgetHistory = (token, budgetId) =>
         },
     });
 
+export const getBalance = (token, budgetId) =>
+    axios.get(`${API_URL}/budget/${budgetId}/history`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
 // === Category Endpoints ===
 export const getCategories = (token, userId) =>
@@ -71,8 +77,6 @@ export const listTransactions = (token) => {
         },
     });
 };
-
-
 
 export const updateTransaction = (token, transactionId, transactionData) =>
     axios.patch(`${API_URL}/transaction/${transactionId}`, transactionData, {
