@@ -1,256 +1,215 @@
 /* CSS Variables */
 :root {
-    --primary: #007bff;
-    --primary-dark: #0056b3;
-    --danger: #dc3545;
-    --danger-dark: #c82333;
-    --success: #28a745;
-    --success-dark: #218838;
-    --neutral: #6c757d;
-    --neutral-dark: #5a6268;
-    --text-dark: #333;
-    --text-muted: #6c757d;
-    --text-light: #aaa;
-    --bg-light: #f9f9f9;
-    --bg-lighter: #f8f9fa;
-    --white: #fff;
-    --shadow: rgba(0, 0, 0, 0.1);
-    --shadow-dark: rgba(0, 0, 0, 0.2);
-    --border: #ddd;
-    --border-light: #ccc;
-    --radius: 8px;
-    --radius-large: 12px;
-    --spacing: 12px;
-    --spacing-large: 20px;
+    --primary: #5C9EAD; /* М'який синьо-зелений для кнопок і акцентів */
+    --primary-dark: #457B9D; /* Темніший відтінок для ховерів */
+    --danger: #E63946; /* Приглушений червоний для помилок і скасування */
+    --danger-dark: #C81E2E; /* Темніший червоний для ховерів */
+    --success: #52B788; /* М'який зелений для позитивних дій */
+    --success-dark: #40916C; /* Темніший зелений */
+    --neutral: #64748B; /* Нейтральний сіро-синій для другорядних елементів */
+    --neutral-dark: #475569; /* Темніший нейтральний */
+    --text-dark: #1E293B; /* Темно-сірий для основного тексту */
+    --text-muted: #6B7280; /* Сірий для другорядного тексту */
+    --text-light: #A1A8B5; /* Світло-сірий для плейсхолдерів */
+    --bg-light: #F8FAFC; /* Світло-сірий фон для контейнера */
+    --bg-lighter: #FFFFFF; /* Чистий білий для карток */
+    --white: #FFFFFF;
+    --shadow: rgba(0, 0, 0, 0.05); /* Дуже м'яка тінь */
+    --shadow-dark: rgba(0, 0, 0, 0.1); /* Трішки темніша тінь */
+    --border: #E2E8F0; /* Світло-сірий для меж */
+    --border-light: #EDF2F7; /* Ще світліший для тонких ліній */
+    --radius: 12px;
+    --radius-large: 16px;
+    --spacing: 16px;
+    --spacing-large: 24px;
     --font-small: 12px;
     --font-base: 14px;
     --font-medium: 16px;
     --font-large: 18px;
-    --font-xlarge: 20px;
+    --font-xlarge: 24px;
+    --font-xxlarge: 32px;
 }
 
-/* General Styles */
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
 .budget-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: calc(var(--spacing) * 2.5);
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: var(--spacing);
     background: var(--bg-light);
     border-radius: var(--radius-large);
-    box-shadow: 0 2px 12px var(--shadow);
 }
 
-.budget-container h2,
-.modal-content h3,
-.transaction-form-container h4 {
+/* Loader */
+.loader {
     text-align: center;
-    margin-bottom: var(--spacing-large);
-    color: var(--text-dark);
+    font-size: var(--font-medium);
+    color: var(--text-muted);
+    padding: var(--spacing-large);
 }
 
-.budget-container h2 { font-size: 24px; }
-.modal-content h3 { font-size: var(--font-xlarge); }
-.transaction-form-container h4 { font-size: var(--font-xlarge); }
-
+/* Error Message */
 .error-message {
+    background: rgba(230, 57, 70, 0.1); /* М'якший фон для помилок */
     color: var(--danger);
-    text-align: center;
-    margin-bottom: var(--spacing-large);
-}
-
-/* User Info Section */
-.user-info {
-    background: var(--white);
-    border-radius: var(--radius);
     padding: var(--spacing);
+    border-radius: var(--radius);
+    text-align: center;
+    margin-bottom: var(--spacing);
+}
+
+/* Header */
+.budget-header {
+    background: var(--bg-lighter);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    box-shadow: 0 2px 10px var(--shadow);
     margin-bottom: var(--spacing-large);
-    box-shadow: 0 1px 6px var(--shadow);
     text-align: center;
 }
 
-.user-info h3 {
-    font-size: var(--font-large);
+.user-info h1 {
+    font-size: var(--font-xxlarge);
+    font-weight: 700;
     color: var(--text-dark);
-    margin: 0 0 8px;
+    margin-bottom: 8px;
 }
 
 .user-info p {
-    font-size: var(--font-base);
+    font-size: var(--font-medium);
     color: var(--text-muted);
-    margin: 0;
 }
 
-/* Buttons */
-button,
-.add-budget-btn,
-.add-transaction-btn,
-.submit-btn,
-.cancel-btn {
+/* Dashboard Grid */
+.budget-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--spacing-large);
+}
+
+@media (max-width: 768px) {
+    .budget-dashboard {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Balance Card */
+.balance-card {
+    background: var(--bg-lighter); /* Білий фон замість градієнта */
+    color: var(--text-dark);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    box-shadow: 0 2px 10px var(--shadow);
+    text-align: center;
+}
+
+.balance-card h2 {
+    font-size: var(--font-large);
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: var(--spacing);
+}
+
+.balance-amount {
+    font-size: var(--font-xxlarge);
+    font-weight: 700;
+    color: var(--primary); /* Акцент на суму */
+}
+
+/* Chart Section */
+.budget-history-chart {
+    background: var(--bg-lighter);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    box-shadow: 0 2px 10px var(--shadow);
+}
+
+.budget-history-chart h2 {
+    font-size: var(--font-large);
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: var(--spacing);
+}
+
+.chart-wrapper {
+    height: 300px;
+    position: relative;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--font-medium);
+}
+
+/* Transaction Section */
+.transaction-section {
+    grid-column: 1 / -1;
+}
+
+.action-btn {
+    background: var(--primary);
+    color: var(--white);
     border: none;
     border-radius: var(--radius);
     padding: var(--spacing) calc(var(--spacing) * 2);
     font-size: var(--font-medium);
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.add-budget-btn {
-    background: var(--success);
-    color: var(--white);
-    display: block;
-    margin: 0 auto calc(var(--spacing) * 2.5) auto;
-}
-
-.add-budget-btn:hover { background: var(--success-dark); }
-
-.add-transaction-btn,
-.submit-btn {
-    background: var(--primary);
-    color: var(--white);
-    display: inline-flex;
-    align-items: center;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
     justify-content: center;
+    align-items: center;
 }
 
-.add-transaction-btn:hover,
-.submit-btn:hover {
+.action-btn:hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
-.add-transaction-btn:focus { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
-
-.add-transaction-btn .icon {
-    margin-right: 8px;
-    font-size: var(--font-large);
-}
-
-.add-transaction-btn.cancel,
-.cancel-btn {
+.action-btn.cancel {
     background: var(--danger);
-    color: var(--white);
 }
 
-.add-transaction-btn.cancel:hover,
-.cancel-btn:hover {
+.action-btn.cancel:hover {
     background: var(--danger-dark);
-    transform: translateY(-2px);
 }
 
-.budget-card button {
-    background: transparent;
-    color: var(--danger);
-    font-size: var(--font-large);
-}
-
-.budget-card button:hover { color: var(--danger-dark); }
-
-/* Budget Grid & Card */
-.budget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--spacing-large);
-    margin-top: var(--spacing-large);
-}
-
-.budget-card {
-    background: var(--white);
-    border-radius: 10px;
-    padding: calc(var(--spacing) * 1.3);
-    box-shadow: 0 1px 6px var(--shadow);
-    transition: transform 0.2s;
-    cursor: pointer;
-}
-
-.budget-card:hover { transform: translateY(-4px); }
-
-.budget-info h3,
-.budget-card h4 {
-    margin: 0 0 8px;
-    font-size: var(--font-large);
-}
-
-.budget-info p {
-    margin: 4px 0 0;
-    font-weight: bold;
-}
-
-.budget-card p {
-    font-size: var(--font-base);
-    color: #555;
-}
-
-.budget-card .badge {
-    background: var(--success);
-    color: var(--white);
-    padding: 4px 8px;
-    border-radius: var(--radius-large);
-    font-size: var(--font-small);
-    margin-top: 10px;
-}
-
-/* Modal */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-}
-
-.modal-backdrop.always-visible {
-    position: static;
-    background: none;
-    box-shadow: none;
-    padding-top: 40px;
-}
-
-.modal-content {
-    background: var(--white);
+/* Transaction Form */
+.transaction-form-card {
+    background: var(--bg-lighter);
+    border-radius: var(--radius);
     padding: var(--spacing-large);
-    border-radius: var(--radius-large);
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 4px 20px var(--shadow-dark);
+    margin-top: var(--spacing);
+    box-shadow: 0 2px 10px var(--shadow);
 }
 
-/* Forms */
-.budget-form,
+.transaction-form-card h3 {
+    font-size: var(--font-xlarge);
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: var(--spacing-large);
+}
+
 .transaction-form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: var(--spacing);
 }
 
-.budget-form input,
-.budget-form select,
-.form-group input,
-.form-group select {
-    padding: var(--spacing);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    font-size: var(--font-base);
-    background: var(--bg-light);
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.budget-form input:focus,
-.budget-form select:focus,
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-}
-
-.budget-form select,
-.form-group select {
-    appearance: none;
-    background: var(--white) url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%23666' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right var(--spacing) center;
-    background-size: 16px;
-    cursor: pointer;
+@media (max-width: 600px) {
+    .transaction-form {
+        grid-template-columns: 1fr;
+    }
 }
 
 .form-group {
@@ -265,130 +224,233 @@ button,
     color: var(--text-dark);
 }
 
-.form-group input::placeholder { color: var(--text-light); }
+.form-group input,
+.form-group select {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: var(--font-base);
+    background: var(--white);
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(92, 158, 173, 0.2); /* М'якший ефект фокусу */
+    outline: none;
+}
+
+.form-group select {
+    appearance: none;
+    background: var(--white) url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%236B7280' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 12px center;
+    background-size: 16px;
+}
 
 .form-actions {
+    grid-column: 1 / -1;
     display: flex;
     gap: var(--spacing);
-    justify-content: center;
-    margin-top: calc(var(--spacing) * 1.3);
+    justify-content: flex-end;
+    margin-top: var(--spacing);
 }
 
-/* Category List */
-.category-list {
-    margin-top: var(--spacing-large);
-    background: var(--bg-lighter);
-    padding: 15px;
+.submit-btn,
+.cancel-btn {
+    padding: 12px 24px;
+    border: none;
     border-radius: var(--radius);
+    font-size: var(--font-base);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.category-list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.submit-btn {
+    background: var(--primary);
+    color: var(--white);
 }
 
-.category-list li {
-    padding: 5px 0;
-    border-bottom: 1px solid var(--border);
+.submit-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
 }
 
-/* Transaction Styles */
-.transaction-actions {
-    text-align: center;
-    margin-top: var(--spacing-large);
+.cancel-btn {
+    background: var(--danger);
+    color: var(--white);
 }
 
-.transaction-form-container {
-    background: var(--white);
-    border-radius: var(--radius-large);
-    padding: calc(var(--spacing) * 2);
-    margin-top: var(--spacing-large);
-    box-shadow: 0 2px 12px var(--shadow);
+.cancel-btn:hover {
+    background: var(--danger-dark);
+    transform: translateY(-2px);
 }
 
+/* Transaction List */
 .transaction-list {
-    margin-top: var(--spacing-large);
+    grid-column: 1 / -1;
+    background: var(--bg-lighter);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    box-shadow: 0 2px 10px var(--shadow);
 }
 
-.transaction-list h3 {
-    font-size: var(--font-large);
+.transaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: var(--spacing);
 }
 
-.transaction-item {
-    background: var(--white);
+.transaction-header h2 {
+    font-size: var(--font-large);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.toggle-btn {
+    background: var(--neutral);
+    color: var(--white);
+    border: none;
     border-radius: var(--radius);
-    padding: var(--spacing);
-    margin-bottom: 8px;
-    box-shadow: 0 1px 6px var(--shadow);
-    display: flex;
-    flex-direction: column;
-}
-
-.transaction-item:hover { background: #f1f1f1; }
-
-.transaction-type {
-    font-weight: bold;
-    color: var(--primary);
-    margin-bottom: 8px;
-}
-
-.transaction-details {
+    padding: 8px 16px;
     font-size: var(--font-base);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background: var(--neutral-dark);
+}
+
+.transaction-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 2fr 1fr 1fr;
+    gap: var(--spacing);
+    font-size: var(--font-base);
+}
+
+.transaction-row {
+    display: contents;
+}
+
+.transaction-row > div {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-light);
     display: flex;
-    justify-content: space-between;
     align-items: center;
 }
 
-.transaction-details span { margin-right: 8px; }
+.transaction-type {
+    font-weight: 600;
+    color: var(--text-dark);
+}
 
-.category-name,
-.note,
+.transaction-amount {
+    font-weight: 500;
+    color: var(--primary); /* Акцент на суму */
+}
+
+.transaction-category,
+.transaction-note,
 .transaction-date {
-    font-size: var(--font-small);
     color: var(--text-muted);
 }
 
-.category-name { font-style: italic; }
-
-.transaction-date {
-    margin-top: 6px;
-    text-align: right;
-}
-
-.transaction-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.transaction-actions {
-    margin-left: 10px;
-}
-
-.edit-btn {
-    background-color: #4bc0c0;
-    color: white;
+.transaction-actions .edit-btn {
+    background: var(--primary);
+    color: var(--white);
     border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-size: var(--font-small);
     cursor: pointer;
-    font-size: 12px;
+    transition: all 0.3s ease;
 }
 
-.edit-btn:hover {
-    background-color: #3aa0a0;
+.transaction-actions .edit-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
 }
 
-.transaction-details {
-    flex-grow: 1;
-    margin-right: 10px;
+@media (max-width: 768px) {
+    .transaction-table {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-row > div {
+        border-bottom: none;
+        padding: 8px 0;
+    }
+
+    .transaction-row {
+        display: flex;
+        flex-direction: column;
+        padding: var(--spacing);
+        border-bottom: 1px solid var(--border-light);
+    }
 }
 
-.transaction-type,
-.transaction-date {
-    min-width: 100px;
+/* Create Budget Card */
+.create-budget-card {
+    background: var(--bg-lighter);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    box-shadow: 0 2px 10px var(--shadow);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.create-budget-card h2 {
+    font-size: var(--font-xlarge);
+    font-weight: 600;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: var(--spacing-large);
+}
+
+.budget-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing);
+}
+
+.budget-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.budget-form label {
+    font-size: var(--font-base);
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.budget-form input,
+.budget-form select {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: var(--font-base);
+    background: var(--white);
+    transition: all 0.3s ease;
+}
+
+.budget-form input:focus,
+.budget-form select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(92, 158, 173, 0.2);
+    outline: none;
+}
+
+.budget-form select {
+    appearance: none;
+    background: var(--white) url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%236B7280' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 12px center;
+    background-size: 16px;
+}
+
+.budget-form .submit-btn {
+    margin-top: var(--spacing);
+    width: 100%;
 }
