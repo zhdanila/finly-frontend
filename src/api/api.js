@@ -60,6 +60,13 @@ export const getCategories = (token) =>
         },
     });
 
+export const getCustomCategories = (token) =>
+    axios.get(`${API_URL}/category/custom`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
 export const createCategory = (token, categoryData) =>
     axios.post(`${API_URL}/category`, categoryData, {
         headers: {
@@ -67,6 +74,12 @@ export const createCategory = (token, categoryData) =>
         },
     });
 
+export const deleteCategory = (token, categoryId) =>
+    axios.delete(`${API_URL}/category/${categoryId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
 // === Transaction Endpoints ===
 export const createTransaction = (token, transactionData) =>

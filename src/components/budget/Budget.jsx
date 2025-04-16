@@ -6,11 +6,13 @@ import {
     getBudgetById,
     getBudgetHistory,
     getCategories,
+    getCustomCategories,
     getUserInfo,
     listTransactions,
     updateTransaction,
     deleteTransaction,
     createCategory,
+    deleteCategory,
 } from '../../api/api.js';
 import { Line } from 'react-chartjs-2';
 import {
@@ -35,6 +37,7 @@ const Budget = ({ token }) => {
     const [budgetHistory, setBudgetHistory] = useState([]);
     const [chartData, setChartData] = useState({});
     const [categories, setCategories] = useState([]);
+    const [customCategories, setCustomCategories] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
     const [transactions, setTransactions] = useState([]);
     const [newTransaction, setNewTransaction] = useState({
@@ -47,11 +50,11 @@ const Budget = ({ token }) => {
     const [editTransaction, setEditTransaction] = useState(null);
     const [showTransactionForm, setShowTransactionForm] = useState(false);
     const [showCategoryForm, setShowCategoryForm] = useState(false);
-    const [newCategory, setNewCategory] = useState({ name: '' }); // Removed description
+    const [newCategory, setNewCategory] = useState({ name: '' });
     const [showTransactions, setShowTransactions] = useState(false);
+    const [showCustomCategories, setShowCustomCategories] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Function to add error with timer
     const addError = (message, id) => {
         setErrors((prev) => [...prev, { id, message }]);
         setTimeout(() => {
@@ -59,7 +62,6 @@ const Budget = ({ token }) => {
         }, 5000);
     };
 
-    // Function to handle backend errors
     const handleError = (err, defaultMessage) => {
         const errorId = Date.now();
         if (err.response && err.response.data && err.response.data.message) {
@@ -80,8 +82,12 @@ const Budget = ({ token }) => {
                 lastName: userData.last_name,
                 email: userData.email,
             });
-            const response = await getCategories(token);
-            setCategories(response.data.categories || []);
+            const [categoriesResponse, customCategoriesResponse] = await Promise.all([
+                getCategories(token),
+                getCustomCategories(token),
+            ]);
+            setCategories(categoriesResponse.data.categories || []);
+            setCustomCategories(customCategoriesResponse.data.categories || []);
         } catch (err) {
             handleError(err, 'Failed to load categories.');
         }
@@ -337,7 +343,7 @@ const Budget = ({ token }) => {
         e.preventDefault();
         try {
             setIsLoading(true);
-            await createCategory(token, { name: newCategory.name }); // Send only name
+            await createCategory(token, { name: newCategory.name });
             setNewCategory({ name: '' });
             fetchCategories();
             setShowCategoryForm(false);
@@ -345,6 +351,20 @@ const Budget = ({ token }) => {
             handleError(err, 'Failed to create category.');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDeleteCategory = async (categoryId) => {
+        if (window.confirm('Are you sure you want to delete this category?')) {
+            try {
+                setIsLoading(true);
+                await deleteCategory(token, categoryId);
+                fetchCategories();
+            } catch (err) {
+                handleError(err, 'Failed to delete category.');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -370,10 +390,7 @@ const Budget = ({ token }) => {
                     {errors.map((error) => (
                         <div key={error.id} className="error-message">
                             <span>{error.message}</span>
-                            <button
-                                className="error-close-btn"
-                                onClick={() => closeError(error.id)}
-                            >
+                            <button className="error-close-btn" onClick={() => closeError(error.id)}>
                                 ×
                             </button>
                         </div>
@@ -381,7 +398,6 @@ const Budget = ({ token }) => {
                 </div>
             )}
 
-            {/* Header Section */}
             <header className="budget-header">
                 {userInfo ? (
                     <div className="user-info">
@@ -399,7 +415,6 @@ const Budget = ({ token }) => {
 
             {!isLoading && budget ? (
                 <div className="budget-dashboard">
-                    {/* Balance Card */}
                     <div className="balance-card">
                         <h2>Current Balance</h2>
                         <p className="balance-amount">
@@ -407,7 +422,6 @@ const Budget = ({ token }) => {
                         </p>
                     </div>
 
-                    {/* Chart Section */}
                     <div className="budget-history-chart">
                         <h2>Balance History</h2>
                         {budgetHistory.length > 0 ? (
@@ -419,7 +433,6 @@ const Budget = ({ token }) => {
                         )}
                     </div>
 
-                    {/* Transaction Form */}
                     <div className="transaction-section">
                         <div className="action-buttons">
                             <button
@@ -429,21 +442,19 @@ const Budget = ({ token }) => {
                                     setShowTransactionForm(!showTransactionForm);
                                 }}
                             >
-                                {showTransactionForm ? (
-                                    <span>Cancel</span>
-                                ) : (
-                                    <span>Add Transaction</span>
-                                )}
+                                {showTransactionForm ? <span>Cancel</span> : <span>Add Transaction</span>}
                             </button>
                             <button
                                 className={`action-btn ${showCategoryForm ? 'cancel' : ''}`}
                                 onClick={() => setShowCategoryForm(!showCategoryForm)}
                             >
-                                {showCategoryForm ? (
-                                    <span>Cancel</span>
-                                ) : (
-                                    <span>Add Category</span>
-                                )}
+                                {showCategoryForm ? <span>Cancel</span> : <span>Add Category</span>}
+                            </button>
+                            <button
+                                className="action-btn"
+                                onClick={() => setShowCustomCategories(!showCustomCategories)}
+                            >
+                                {showCustomCategories ? <span>Hide Categories</span> : <span>View Categories</span>}
                             </button>
                         </div>
 
@@ -560,16 +571,12 @@ const Budget = ({ token }) => {
                                             type="text"
                                             placeholder="Enter name..."
                                             value={newCategory.name}
-                                            onChange={(e) =>
-                                                setNewCategory({ ...newCategory, name: e.target.value })
-                                            }
+                                            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                                             required
                                         />
                                     </div>
                                     <div className="form-actions">
-                                        <button type="submit" className="submit-btn">
-                                            Save
-                                        </button>
+                                        <button type="submit" className="submit-btn">Save</button>
                                         <button type="button" className="cancel-btn" onClick={handleCancelCategory}>
                                             Cancel
                                         </button>
@@ -577,21 +584,46 @@ const Budget = ({ token }) => {
                                 </form>
                             </div>
                         )}
+
+                        {showCustomCategories && (
+                            <div className="category-list">
+                                <div className="category-header">
+                                    <h2>Custom Categories</h2>
+                                </div>
+                                <div className="category-table-wrapper">
+                                    <div className="category-table">
+                                        {customCategories.length > 0 ? (
+                                            customCategories.map((category) => (
+                                                <div key={category.id} className="category-row">
+                                                    <div className="category-name">{category.name}</div>
+                                                    <div className="category-actions">
+                                                        <button
+                                                            className="delete-btn"
+                                                            onClick={() => handleDeleteCategory(category.id)}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="empty-message">No custom categories available.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Transactions List */}
                     <div className="transaction-list">
                         <div className="transaction-header">
                             <h2>Recent Transactions</h2>
-                            <button
-                                className="toggle-btn"
-                                onClick={() => setShowTransactions(!showTransactions)}
-                            >
+                            <button className="toggle-btn" onClick={() => setShowTransactions(!showTransactions)}>
                                 {showTransactions ? 'Hide' : 'Show'}
                             </button>
                         </div>
-                        {showTransactions && (
-                            <div className="transaction-table">
+                        <div className="transaction-table-wrapper">
+                            <div className={`transaction-table ${showTransactions ? 'visible' : 'hidden'}`}>
                                 {transactions.length > 0 ? (
                                     transactions.map((transaction) => (
                                         <div key={transaction.id} className="transaction-row">
@@ -629,7 +661,7 @@ const Budget = ({ token }) => {
                                     <p className="empty-message">No transactions available.</p>
                                 )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -666,9 +698,7 @@ const Budget = ({ token }) => {
                                     step="0.01"
                                 />
                             </div>
-                            <button type="submit" className="submit-btn">
-                                Create Budget
-                            </button>
+                            <button type="submit" className="submit-btn">Create Budget</button>
                         </form>
                     </div>
                 )
