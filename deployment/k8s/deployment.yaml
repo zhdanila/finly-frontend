@@ -16,6 +16,7 @@ spec:
       containers:
         - name: finly-frontend
           image: danyazhurba/finly-frontend:latest  # Use your built Docker image here
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           env:
