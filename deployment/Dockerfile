@@ -2,7 +2,7 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY . .
+COPY .. .
 
 ARG REACT_APP_BACKEND_URL=http://backend.finly.click
 ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL

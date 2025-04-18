@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finly-frontend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finly-frontend
+  template:
+    metadata:
+      labels:
+        app: finly-frontend
+    spec:
+      containers:
+        - name: finly-frontend
+          image: danyazhurba/finly-frontend:latest  # Use your built Docker image here
+          ports:
+            - containerPort: 80
+          env:
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: finly-frontend-config
+                  key: ENV
+            - name: BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: finly-frontend-config
+                  key: BACKEND_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finly-frontend-service
+  namespace: default
+spec:
+  selector:
+    app: finly-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+  type: NodePort
