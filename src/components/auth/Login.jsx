@@ -16,6 +16,7 @@ const Login = ({ onLoginSuccess }) => {
             onLoginSuccess(response.data.token);
         } catch (error) {
             setError('Невірний логін або пароль.');
+            console.error('Login error:', error);
         }
     };
 

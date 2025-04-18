@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = "http://finly-backend-service.default.svc.cluster.local"
+const API_URL = "http://backend.finly.click";
 
 // === Auth Endpoints ===
 export const login = (credentials) =>
