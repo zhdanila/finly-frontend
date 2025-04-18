@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = "http://backend.finly.click";
 
 // === Auth Endpoints ===
 export const login = (credentials) =>
