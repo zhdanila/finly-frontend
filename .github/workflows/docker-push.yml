@@ -24,13 +24,13 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t finly-frontend .
-          docker tag finly-frontend danyazhurba/finly-frontend:${{ github.sha }}
-          docker push danyazhurba/finly-frontend:${{ github.sha }}
+          docker build \
+          --build-arg REACT_APP_BACKEND_URL=http://backend.finly.click \
+          -t finly-frontend .
           
-          docker build -t finly-frontend .
           docker tag finly-frontend danyazhurba/finly-frontend:${{ github.sha }}
           docker tag finly-frontend danyazhurba/finly-frontend:latest
+
           docker push danyazhurba/finly-frontend:${{ github.sha }}
           docker push danyazhurba/finly-frontend:latest
         

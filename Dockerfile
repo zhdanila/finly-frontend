@@ -4,6 +4,9 @@ WORKDIR /app
 
 COPY . .
 
+ARG REACT_APP_BACKEND_URL=http://backend.finly.click
+ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+
 RUN npm install
 
 RUN npm run build
