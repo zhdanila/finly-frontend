@@ -26,8 +26,8 @@ jobs:
         run: |
           docker build \
             --build-arg REACT_APP_BACKEND_URL=http://backend.finly.click \
-            -f deployment/Dockerfile \ 
-            -t finly-frontend . 
+            -f deployment/Dockerfile \
+            -t finly-frontend .
           
           docker tag finly-frontend danyazhurba/finly-frontend:${{ github.sha }}
           docker tag finly-frontend danyazhurba/finly-frontend:latest
