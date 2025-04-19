@@ -8,10 +8,16 @@ on:
 jobs:
   docker-build-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure full repository is checked out
+
+      - name: List repository files
+        run: |
+          ls -R
+          ls -l deployment/Dockerfile || echo "Dockerfile not found"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -23,25 +29,27 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Build and push Docker image for frontend
-        run: |
-          docker build \
-            --build-arg REACT_APP_BACKEND_URL=http://backend.finly.click \
-            -f deployment/Dockerfile \  # Вказуємо шлях до Dockerfile
-            -t finly-frontend .  # Контекст залишається поточною директорією (.)
-          
-          docker tag finly-frontend danyazhurba/finly-frontend:${{ github.sha }}
-          docker tag finly-frontend danyazhurba/finly-frontend:latest
-
-          docker push danyazhurba/finly-frontend:${{ github.sha }}
-          docker push danyazhurba/finly-frontend:latest
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: deployment/Dockerfile
+          build-args: |
+            REACT_APP_BACKEND_URL=http://backend.finly.click
+          tags: |
+            zhdanila/finly-frontend:${{ github.sha }}
+            zhdanila/finly-frontend:latest
+          push: true
 
   deploy:
     runs-on: ubuntu-latest
-    needs: docker-build-push  # Залежить від виконання попереднього job
-
+    needs: docker-build-push
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: List Kubernetes manifests
+        run: |
+          ls -l deployment/k8s/
 
       - name: Deploy to Kubernetes
         env:
@@ -52,7 +60,6 @@ jobs:
         run: |
           echo "$KUBECONFIG" > kubeconfig
           export KUBECONFIG=kubeconfig
-
           kubectl apply -f deployment/k8s/deployment.yaml
           kubectl apply -f deployment/k8s/ingress.yaml
           kubectl apply -f deployment/k8s/configmap.yaml
