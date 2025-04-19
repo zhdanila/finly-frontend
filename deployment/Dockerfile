@@ -5,10 +5,10 @@ WORKDIR /app
 COPY .. .
 
 ARG REACT_APP_BACKEND_URL
-ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+
+RUN echo "REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL" > .env.production
 
 RUN npm install
-
 RUN npm run build
 
 FROM nginx:stable-alpine
