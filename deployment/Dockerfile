@@ -2,11 +2,9 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY .. .
+COPY . .
 
-ARG REACT_APP_BACKEND_URL
-
-RUN echo "REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL" > .env.production
+RUN echo "REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL" > .env
 
 RUN npm install
 RUN npm run build
