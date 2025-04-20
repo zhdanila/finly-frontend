@@ -1,7 +1,6 @@
 #!/bin/sh
 
-cat <<EOF > /usr/share/nginx/html/env.js
-window.env = {
-  BACKEND_URL: "$BACKEND_URL"
-};
-EOF
+echo "window.env = {
+  ENV: \"${ENV}\",
+  BACKEND_URL: \"${BACKEND_URL}\"
+};" > /usr/share/nginx/html/env.js
