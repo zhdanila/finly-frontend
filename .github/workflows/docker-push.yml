@@ -22,10 +22,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-      - name: Replace image tag with Git SHA
-        run: |
-          sed -i "s|danyazhurba/finly-frontend:__IMAGE_TAG__|danyazhurba/finly-frontend:${{ github.sha }}|g" deployment/k8s/deployment.yaml      
-
       - name: Build and push Docker image for frontend
         run: |
           docker build -f deployment/Dockerfile -t finly-frontend .
@@ -43,6 +39,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Replace image tag with Git SHA
+        run: |
+          sed -i "s|danyazhurba/finly-frontend:__IMAGE_TAG__|danyazhurba/finly-frontend:${{ github.sha }}|g" deployment/k8s/deployment.yaml      
 
       - name: Deploy to Kubernetes
         env:
