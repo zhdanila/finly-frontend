@@ -54,6 +54,7 @@ const Budget = ({ token }) => {
     const [showTransactions, setShowTransactions] = useState(false);
     const [showCustomCategories, setShowCustomCategories] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [displayedTransactionsCount, setDisplayedTransactionsCount] = useState(5);
 
     const addError = (message, id) => {
         setErrors((prev) => [...prev, { id, message }]);
@@ -194,11 +195,11 @@ const Budget = ({ token }) => {
             tooltip: {
                 enabled: true,
                 backgroundColor: 'rgba(30, 30, 30, 0.9)',
-                titleFont: { size: 14, weight: '600', family: "'Inter', sans-serif" },
-                bodyFont: { size: 12, family: "'Inter', sans-serif" },
-                padding: 12,
-                cornerRadius: 8,
-                boxPadding: 6,
+                titleFont: { size: 12, weight: '600', family: "'Inter', sans-serif" },
+                bodyFont: { size: 10, family: "'Inter', sans-serif" },
+                padding: 8,
+                cornerRadius: 6,
+                boxPadding: 4,
                 callbacks: {
                     label: (context) => `Balance: ${context.parsed.y} ${budget?.currency || ''}`,
                 },
@@ -209,10 +210,10 @@ const Budget = ({ token }) => {
                 grid: { display: false },
                 ticks: {
                     color: 'var(--text-muted)',
-                    font: { size: 12, family: "'Inter', sans-serif" },
+                    font: { size: 10, family: "'Inter', sans-serif" },
                     maxRotation: 0,
                     autoSkip: true,
-                    maxTicksLimit: 8,
+                    maxTicksLimit: 6,
                 },
             },
             y: {
@@ -222,16 +223,16 @@ const Budget = ({ token }) => {
                 },
                 ticks: {
                     color: 'var(--text-muted)',
-                    font: { size: 12, family: "'Inter', sans-serif" },
+                    font: { size: 10, family: "'Inter', sans-serif" },
                     callback: (value) =>
                         value >= 1000 ? `${(value / 1000).toFixed(1).replace(/\.0$/, '')}K` : value,
-                    maxTicksLimit: 6,
-                    padding: 10,
+                    maxTicksLimit: 5,
+                    padding: 8,
                 },
             },
         },
-        elements: { line: { tension: 0.5 }, point: { radius: 0, hoverRadius: 8, hitRadius: 10 } },
-        animation: { duration: 1200, easing: 'easeOutQuart' },
+        elements: { line: { tension: 0.5 }, point: { radius: 0, hoverRadius: 6, hitRadius: 8 } },
+        animation: { duration: 800, easing: 'easeOutQuart' },
         hover: { mode: 'nearest', intersect: true },
     };
 
@@ -245,6 +246,18 @@ const Budget = ({ token }) => {
             addError('Please log in to view your budget.', Date.now());
         }
     }, [token]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768 && (showTransactionForm || showCategoryForm)) {
+                setShowTransactionForm(false);
+                setShowCategoryForm(false);
+                setEditTransaction(null);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [showTransactionForm, showCategoryForm]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -382,6 +395,8 @@ const Budget = ({ token }) => {
         setErrors((prev) => prev.filter((err) => err.id !== id));
     };
 
+    const displayedTransactions = transactions.slice(0, displayedTransactionsCount);
+
     return (
         <div className="budget-container">
             {isLoading && <div className="loader">Loading...</div>}
@@ -390,7 +405,11 @@ const Budget = ({ token }) => {
                     {errors.map((error) => (
                         <div key={error.id} className="error-message">
                             <span>{error.message}</span>
-                            <button className="error-close-btn" onClick={() => closeError(error.id)}>
+                            <button
+                                className="error-close-btn"
+                                onClick={() => closeError(error.id)}
+                                aria-label="Close error message"
+                            >
                                 ×
                             </button>
                         </div>
@@ -441,18 +460,21 @@ const Budget = ({ token }) => {
                                     setEditTransaction(null);
                                     setShowTransactionForm(!showTransactionForm);
                                 }}
+                                aria-label={showTransactionForm ? 'Cancel transaction form' : 'Add new transaction'}
                             >
                                 {showTransactionForm ? <span>Cancel</span> : <span>Add Transaction</span>}
                             </button>
                             <button
                                 className={`action-btn ${showCategoryForm ? 'cancel' : ''}`}
                                 onClick={() => setShowCategoryForm(!showCategoryForm)}
+                                aria-label={showCategoryForm ? 'Cancel category form' : 'Add new category'}
                             >
                                 {showCategoryForm ? <span>Cancel</span> : <span>Add Category</span>}
                             </button>
                             <button
                                 className="action-btn"
                                 onClick={() => setShowCustomCategories(!showCustomCategories)}
+                                aria-label={showCustomCategories ? 'Hide custom categories' : 'View custom categories'}
                             >
                                 {showCustomCategories ? <span>Hide Categories</span> : <span>View Categories</span>}
                             </button>
@@ -476,6 +498,7 @@ const Budget = ({ token }) => {
                                                     : setNewTransaction({ ...newTransaction, type: e.target.value })
                                             }
                                             required
+                                            aria-label="Transaction type"
                                         >
                                             <option value="withdrawal">Expense</option>
                                             <option value="deposit">Income</option>
@@ -497,6 +520,7 @@ const Budget = ({ token }) => {
                                             required
                                             min="0.01"
                                             step="0.01"
+                                            aria-label="Transaction amount"
                                         />
                                     </div>
 
@@ -521,6 +545,7 @@ const Budget = ({ token }) => {
                                                     })
                                             }
                                             required
+                                            aria-label="Transaction category"
                                         >
                                             <option value="" disabled>
                                                 Select a category
@@ -545,14 +570,24 @@ const Budget = ({ token }) => {
                                                     ? setEditTransaction({ ...editTransaction, note: e.target.value })
                                                     : setNewTransaction({ ...newTransaction, note: e.target.value })
                                             }
+                                            aria-label="Transaction note"
                                         />
                                     </div>
 
                                     <div className="form-actions">
-                                        <button type="submit" className="submit-btn">
+                                        <button
+                                            type="submit"
+                                            className="submit-btn"
+                                            aria-label={editTransaction ? 'Update transaction' : 'Save transaction'}
+                                        >
                                             {editTransaction ? 'Update' : 'Save'}
                                         </button>
-                                        <button type="button" className="cancel-btn" onClick={handleCancelEdit}>
+                                        <button
+                                            type="button"
+                                            className="cancel-btn"
+                                            onClick={handleCancelEdit}
+                                            aria-label="Cancel transaction form"
+                                        >
                                             Cancel
                                         </button>
                                     </div>
@@ -573,11 +608,23 @@ const Budget = ({ token }) => {
                                             value={newCategory.name}
                                             onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                                             required
+                                            aria-label="Category name"
                                         />
                                     </div>
                                     <div className="form-actions">
-                                        <button type="submit" className="submit-btn">Save</button>
-                                        <button type="button" className="cancel-btn" onClick={handleCancelCategory}>
+                                        <button
+                                            type="submit"
+                                            className="submit-btn"
+                                            aria-label="Save category"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="cancel-btn"
+                                            onClick={handleCancelCategory}
+                                            aria-label="Cancel category form"
+                                        >
                                             Cancel
                                         </button>
                                     </div>
@@ -600,6 +647,7 @@ const Budget = ({ token }) => {
                                                         <button
                                                             className="delete-btn"
                                                             onClick={() => handleDeleteCategory(category.id)}
+                                                            aria-label={`Delete category ${category.name}`}
                                                         >
                                                             Delete
                                                         </button>
@@ -618,14 +666,18 @@ const Budget = ({ token }) => {
                     <div className="transaction-list">
                         <div className="transaction-header">
                             <h2>Recent Transactions</h2>
-                            <button className="toggle-btn" onClick={() => setShowTransactions(!showTransactions)}>
+                            <button
+                                className="toggle-btn"
+                                onClick={() => setShowTransactions(!showTransactions)}
+                                aria-label={showTransactions ? 'Hide transactions' : 'Show transactions'}
+                            >
                                 {showTransactions ? 'Hide' : 'Show'}
                             </button>
                         </div>
                         <div className="transaction-table-wrapper">
                             <div className={`transaction-table ${showTransactions ? 'visible' : 'hidden'}`}>
-                                {transactions.length > 0 ? (
-                                    transactions.map((transaction) => (
+                                {displayedTransactions.length > 0 ? (
+                                    displayedTransactions.map((transaction) => (
                                         <div key={transaction.id} className="transaction-row">
                                             <div className="transaction-type">
                                                 {transaction.type === 'withdrawal' ? 'Expense' : 'Income'}
@@ -645,12 +697,14 @@ const Budget = ({ token }) => {
                                                 <button
                                                     className="edit-btn"
                                                     onClick={() => handleEditTransaction(transaction)}
+                                                    aria-label={`Edit transaction ${transaction.id}`}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
                                                     className="delete-btn"
                                                     onClick={() => handleDeleteTransaction(transaction.id)}
+                                                    aria-label={`Delete transaction ${transaction.id}`}
                                                 >
                                                     Delete
                                                 </button>
@@ -661,6 +715,15 @@ const Budget = ({ token }) => {
                                     <p className="empty-message">No transactions available.</p>
                                 )}
                             </div>
+                            {window.innerWidth < 768 && transactions.length > displayedTransactionsCount && (
+                                <button
+                                    className="action-btn"
+                                    onClick={() => setDisplayedTransactionsCount((prev) => prev + 5)}
+                                    aria-label="Load more transactions"
+                                >
+                                    Load More
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -676,6 +739,7 @@ const Budget = ({ token }) => {
                                     value={newBudget.currency}
                                     onChange={(e) => setNewBudget({ ...newBudget, currency: e.target.value })}
                                     required
+                                    aria-label="Budget currency"
                                 >
                                     <option value="" disabled>
                                         Select currency
@@ -696,9 +760,16 @@ const Budget = ({ token }) => {
                                     required
                                     min="0"
                                     step="0.01"
+                                    aria-label="Initial budget amount"
                                 />
                             </div>
-                            <button type="submit" className="submit-btn">Create Budget</button>
+                            <button
+                                type="submit"
+                                className="submit-btn"
+                                aria-label="Create budget"
+                            >
+                                Create Budget
+                            </button>
                         </form>
                     </div>
                 )
