@@ -41,7 +41,7 @@ function App() {
                     path="/dashboard"
                     element={
                         token ? (
-                            <Budget token={token} />
+                            <Budget token={token} setToken={setToken} />
                         ) : (
                             <Navigate to="/login" />
                         )

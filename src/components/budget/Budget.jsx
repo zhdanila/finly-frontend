@@ -13,6 +13,7 @@ import {
     deleteTransaction,
     createCategory,
     deleteCategory,
+    logout,
 } from '../../api/api.js';
 import { Line } from 'react-chartjs-2';
 import {
@@ -25,11 +26,12 @@ import {
     Title,
     Tooltip,
 } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
 import './Budget.css';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const Budget = ({ token }) => {
+const Budget = ({ token, setToken }) => {
     const [balance, setBalance] = useState(null);
     const [budget, setBudget] = useState(null);
     const [errors, setErrors] = useState([]);
@@ -55,6 +57,8 @@ const Budget = ({ token }) => {
     const [showCustomCategories, setShowCustomCategories] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [displayedTransactionsCount, setDisplayedTransactionsCount] = useState(5);
+
+    const navigate = useNavigate();
 
     const addError = (message, id) => {
         setErrors((prev) => [...prev, { id, message }]);
@@ -244,8 +248,9 @@ const Budget = ({ token }) => {
                 .finally(() => setIsLoading(false));
         } else {
             addError('Please log in to view your budget.', Date.now());
+            navigate('/login');
         }
-    }, [token]);
+    }, [token, navigate]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -381,6 +386,20 @@ const Budget = ({ token }) => {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            setIsLoading(true);
+            await logout(token);
+            setToken(null);
+            localStorage.removeItem('token');
+            navigate('/login');
+        } catch (err) {
+            handleError(err, 'Failed to log out.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleCancelCategory = () => {
         setNewCategory({ name: '' });
         setShowCategoryForm(false);
@@ -420,10 +439,19 @@ const Budget = ({ token }) => {
             <header className="budget-header">
                 {userInfo ? (
                     <div className="user-info">
-                        <h1>
-                            Welcome, {userInfo.firstName} {userInfo.lastName}
-                        </h1>
+                        <div className="user-info-header">
+                            <h1>
+                                Welcome, {userInfo.firstName} {userInfo.lastName}
+                            </h1>
+                        </div>
                         <p>{userInfo.email}</p>
+                        <button
+                            className="action-btn logout-btn"
+                            onClick={handleLogout}
+                            aria-label="Log out"
+                        >
+                            Log Out
+                        </button>
                     </div>
                 ) : (
                     <div className="user-info">
@@ -434,7 +462,7 @@ const Budget = ({ token }) => {
 
             {!isLoading && budget ? (
                 <div className="budget-dashboard">
-                    <div className="balance-card">
+                <div className="balance-card">
                         <h2>Current Balance</h2>
                         <p className="balance-amount">
                             {balance !== null ? `${balance} ${budget.currency}` : 'Loading...'}

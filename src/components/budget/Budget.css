@@ -637,11 +637,30 @@
     }
 }
 
+.logout-btn {
+    background: var(--danger);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.375rem 0.75rem;
+    font-size: var(--font-small);
+    font-weight: 500;
+    cursor: pointer;
+    min-height: 36px;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.logout-btn:hover {
+    background: var(--danger-dark);
+}
+
+
 /* Animations for Mobile */
 @media (prefers-reduced-motion: reduce) {
     .action-btn,
     .submit-btn,
     .cancel-btn,
+    .logout-btn,
     .transaction-table {
         transition: none;
     }
