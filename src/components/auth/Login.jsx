@@ -13,9 +13,11 @@ const Login = ({ onLoginSuccess }) => {
 
         try {
             const response = await login({ email, password });
+            const token = response.data.token;
+            localStorage.setItem('token', token);
             onLoginSuccess(response.data.token);
         } catch (error) {
-            setError('Невірний логін або пароль.');
+            setError('Invalid email or password');
             console.error('Login error:', error);
         }
     };
