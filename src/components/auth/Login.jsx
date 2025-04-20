@@ -26,7 +26,7 @@ const Login = ({ onLoginSuccess }) => {
                 <h2>Login</h2>
                 <form onSubmit={handleLogin}>
                     <div className="input-group">
-                        <label>Email</label>
+                        <label>Email Address</label>
                         <input
                             type="email"
                             value={email}
