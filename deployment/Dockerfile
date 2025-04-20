@@ -15,6 +15,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY deployment/default.conf /etc/nginx/conf.d/default.conf
 
 COPY deployment/env.sh /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
 
 EXPOSE 80
 
