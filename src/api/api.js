@@ -16,7 +16,7 @@ export const register = (userDetails) =>
     axios.post(`${API_URL}/auth/register`, userDetails);
 
 export const getUserInfo = (token) =>
-    axios.post(`${API_URL}/auth/me`, {}, {
+    axios.get(`${API_URL}/auth/me`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
